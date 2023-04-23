@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onu</title>
+</head>
+<link rel="stylesheet" href="style.css">
+<body>
+    <audio src="./music.mp3" hidden autoplay loop id="music"></audio>
+    <img id="cards-img" src="./cards.png" hidden>
+    <div id="loading" style="opacity: 0; display: none;">
+        <p id="loading-text">Chargement...</p>
+    </div>
+    <div id="settings">
+        <div id="settings-sounds">
+            <div class="settings-button" id="settings-sounds-music">
+                <img class="settings-button-img" id="settings-sounds-music-img" src="https://api.iconify.design/material-symbols:music-note.svg">
+            </div>
+            <div class="settings-button" id="settings-sounds-effects">
+                <img class="settings-button-img" id="settings-sounds-effects-img" src="https://api.iconify.design/ic:round-volume-up.svg">
+            </div>
+        </div>
+        <div id="settings-game">
+            <div class="settings-button" id="settings-game-button">
+                <img class="settings-button-img" id="settings-game-button-img" src="https://api.iconify.design/material-symbols:settings.svg">
+            </div>
+        </div>
+        <div id="settings-bg-tab-game" style="opacity: 0; display: none;">
+            <div id="settings-tab-game">
+                <div id="settings-tab-game-close">
+                    <img class="settings-button-img" style="filter: invert(100%);" src="https://api.iconify.design/ic:round-close.svg">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="game">
+        <div class="player" id="p1">
+
+        </div>
+        <div class="player" id="p2">
+
+        </div>
+        <div class="player" id="p3">
+
+        </div>
+        <div class="player" id="p4">
+
+        </div>
+        <div id="cards">
+            <div id="center-cards">
+                <canvas id="cards-pile"></canvas>
+                <canvas id="cards-top"></canvas>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="/jquery/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://github.com/js-cookie/js-cookie/releases/download/v3.0.4/js.cookie.min.js"></script>
+<script src="client.js"></script>
+</html>

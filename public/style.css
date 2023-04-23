@@ -1,0 +1,219 @@
+@import url("https://fonts.googleapis.com/css2?family=Cabin:wght@700&display=swap");
+* {
+    font-family: "Cabin", sans-serif;
+    transition: opacity .5s ease-in-out;
+}
+
+:root{
+    --player-width: 700px;
+    --player-height: 200px;
+}
+
+#loading {
+    cursor: wait;
+    z-index: 255;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+#loading-text {
+    color: white;
+    font-size: 3em;
+}
+
+#settings {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+#settings-sounds {
+    z-index: 150;
+    display: grid;
+    grid-template: "a b";
+    justify-items: center;
+    align-items: center;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 125px;
+    height: 60px;
+}
+#settings-game {
+    z-index: 150;
+    display: grid;
+    grid-template: "a";
+    justify-items: center;
+    align-items: center;
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    width: 60px;
+    height: 60px;
+}
+.settings-button {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+.settings-button-img {
+    width: 50px;
+    height: 50px;
+    filter: invert(25%);
+}
+.settings-button-img:hover {
+    transform: rotate(-360deg);
+    transition: transform .5s ease-in-out;
+}
+#settings-bg-tab-game {
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+#settings-tab-game {
+    z-index: 210;
+    display: grid;
+    width: 50%;
+    height: 50%;
+    border-radius: 25px;
+    background-color: white;
+}
+#settings-tab-game-close {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 45px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: red;
+    transform: translate(-15px, -15px);
+}
+
+#game {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #F55;
+}
+.player {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    background-color: #AAA;
+    border-radius: 25px;
+}
+.player::before {
+    display: flex;
+    padding: 10px 15px;
+    background-color: #AAA;
+    border-radius: 15px;
+}
+#p1 {
+    width: var(--player-width);
+    height: var(--player-height);
+    bottom: 0;
+    left: calc(50% - var(--player-width)/2);
+}
+#p1::before {
+    content: "Joueur 1";
+    transform: translateY(-25px);
+}
+#p2 {
+    width: var(--player-height);
+    height: var(--player-width);
+    top: calc(50% - var(--player-width)/2);
+    left: 0;
+}
+#p2::before {
+    content: "Joueur 2";
+    transform: translateY(-25px);
+}
+#p3 {
+    width: var(--player-width);
+    height: var(--player-height);
+    top: 0;
+    left: calc(50% - var(--player-width)/2);
+}
+#p3::before {
+    content: "Joueur 3";
+    transform: translateY(25px);
+    flex-direction: column-reverse;
+}
+#p4 {
+    width: var(--player-height);
+    height: var(--player-width);
+    top: calc(50% - var(--player-width)/2);
+    right: 0;
+}
+#p4::before {
+    content: "Joueur 4";
+    transform: translateY(25px);
+    flex-direction: column-reverse;
+}
+#cards {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+#center-cards {
+    display: grid;
+    grid-template: "a b";
+    justify-items: center;
+    align-items: center;
+    width: 550px;
+    height: 350px;
+    border-radius: 25px;
+    background-color: gray;
+    transform: translateY(25px);
+}
+#center-cards::after {
+    content: "Onu";
+    font-size: 3em;
+    display: flex;
+    position: absolute;
+    transform: translateY(-225px);
+}
+#cards-pile {
+    display: flex;
+    width: 191px;
+    height: 284px;
+    border-radius: 35px;
+}
+#cards-top {
+    display: flex;
+    width: 191px;
+    height: 284px;
+    border-radius: 35px;
+}
