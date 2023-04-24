@@ -7,7 +7,7 @@ if (Cookies.get("name") == undefined || Cookies.get("name") == "") {
 
 const USER_NAME = Cookies.get("name");
 
-$("#welcome-title").text(`Bienvenue ${USER_NAME} !`);
+$("#p1-name").text(USER_NAME);
 
 function openLoadPage() {
     $("#loading").show();
@@ -54,36 +54,54 @@ async function giveCards(nb) {
     }
 }
 
-var GAME_SETTINGS_TAB = false;
+var ROOM_SETTINGS_TAB = false;
 function changeSettingsTab() {
-    if (GAME_SETTINGS_TAB) {
-        $("#settings-bg-tab-game").css("opacity", 0);
-        setTimeout(() => $("#settings-bg-tab-game").hide(), 500);
+    if (ROOM_SETTINGS_TAB) {
+        $("#settings-bg-tab-room").css("opacity", 0);
+        setTimeout(() => $("#settings-bg-tab-room").hide(), 500);
     } else {
-        $("#settings-bg-tab-game").show();
-        $("#settings-bg-tab-game").css("opacity", 1);
+        $("#settings-bg-tab-room").show();
+        $("#settings-bg-tab-room").css("opacity", 1);
     }
-    GAME_SETTINGS_TAB = !GAME_SETTINGS_TAB;
+    ROOM_SETTINGS_TAB = !ROOM_SETTINGS_TAB;
 }
-$("#settings-game-button").on("click", changeSettingsTab);
-$("#settings-tab-game-close").on("click", changeSettingsTab);
+$("#settings-room-button").on("click", changeSettingsTab);
+$("#settings-tab-room-close").on("click", changeSettingsTab);
 
-$("form").on("submit", (e) => {
+$("#form-join-room").on("submit", (e) => {
     e.preventDefault();
-    const formID = $(e.target).attr("id")
 
     openLoadPage();
+    changeSettingsTab();
+    socket.emit("join-room", $("#join-room-code").val(), USER_NAME);
 });
 
 socket.on("connect", () => {
     console.log("Connected to the server!");
 
-    socket.on("join-game", (game) => {
-        console.log(`Joining game ${game.code}...`);
-        console.log("Game data :", game);
+    socket.on("join-room", (room) => {
+        console.log(`Joining room ${room.code}...`);
+        console.log("Room data :", room);
+
+        ROOM = room;
+        updateRoom(ROOM);
 
         closeLoadPage();
     });
+});
+
+function updateRoom(room) {
+    $("#settings-tab-room-code").text(`Code de ta table : ${ROOM.code}`);
+    for (let i = 1; i <= 4; i++) {
+        if (ROOM.playersID["p"+i] != null) $(`#p${i}-name`).text(ROOM.playersID["p"+i]);
+    }
+}
+
+var ROOM;
+socket.emit("get-room-data");
+socket.on("get-room-data", (room) => {
+    ROOM = room
+    updateRoom(ROOM);
 });
 
 socket.on("error", (err) => {

@@ -22,31 +22,37 @@
                 <img class="settings-button-img" id="settings-sounds-effects-img" src="https://api.iconify.design/ic:round-volume-up.svg">
             </div>
         </div>
-        <div id="settings-game">
-            <div class="settings-button" id="settings-game-button">
-                <img class="settings-button-img" id="settings-game-button-img" src="https://api.iconify.design/material-symbols:settings.svg">
+        <div id="settings-room">
+            <div class="settings-button" id="settings-room-button">
+                <img class="settings-button-img" id="settings-room-button-img" src="https://api.iconify.design/material-symbols:settings.svg">
             </div>
         </div>
-        <div id="settings-bg-tab-game" style="opacity: 0; display: none;">
-            <div id="settings-tab-game">
-                <div id="settings-tab-game-close">
+        <div id="settings-bg-tab-room" style="opacity: 0; display: none;">
+            <div id="settings-tab-room">
+                <div id="settings-tab-room-close">
                     <img class="settings-button-img" style="filter: invert(100%);" src="https://api.iconify.design/ic:round-close.svg">
                 </div>
+                <h1 id="settings-tab-room-code"></h1>
+                <form class="settings-tab-room-form" id="form-join-room">
+                    <h1>Rejoindre une table</h1>
+                    <input type="text" id="join-room-code" required min="9" max="9" placeholder="1234-5678">
+                    <input type="submit" value="Entrer">
+                </form>
             </div>
         </div>
     </div>
-    <div id="game">
+    <div id="room">
         <div class="player" id="p1">
-
+            <label class="player-name" id="p1-name">Joueur 1</label>
         </div>
         <div class="player" id="p2">
-
+            <label class="player-name" id="p2-name">Joueur 2</label>
         </div>
         <div class="player" id="p3">
-
+            <label class="player-name" id="p3-name">Joueur 3</label>
         </div>
         <div class="player" id="p4">
-
+            <label class="player-name" id="p4-name">Joueur 4</label>
         </div>
         <div id="cards">
             <div id="center-cards">

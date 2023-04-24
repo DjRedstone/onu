@@ -5,23 +5,8 @@ const path = require("path");
 const io = require('socket.io')(server);
 const CronJob = require('cron').CronJob;
 
-class Player {
-    /**
-     * @param {String} id 
-     * @param {String} name 
-     */
-    constructor(id, name) {
-        this.id = id;
-        this.name = name;
-    }
-}
-
-class Game {
-    /**
-     * @param {Player} host 
-     * @param {Boolean} isPrivate 
-     */
-    constructor(host, isPrivate) {
+class Room {
+    constructor(hostID) {
         // CODE
         const rand = () => {
             let res = ""
@@ -32,106 +17,65 @@ class Game {
         };
         this.code = `${rand()}-${rand()}`;
         // OTHER
-        this.players = [host];
-        this.host = host;
-        this.isPrivate = isPrivate;
+        this.playersID = {p1: hostID, p2: null, p3: null, p4: null};
+        this.hostID = hostID;
     }
 
-    containPlayer(player) {
-        for (const lPlayer of this.players) {
-            if (lPlayer.id == player.id) {
+    getPlayersNumber() {
+        let nb = 0;
+        for (const playerID of Object.values(this.playersID)) {
+            if (playerID != null) nb += 1
+        }
+        return nb
+    }
+
+    containPlayer(playerID) {
+        for (const lPlayerID of Object.values(this.playersID)) {
+            if (lPlayerID == playerID) {
                 return true
             }
         }
         return false
     }
 
-    addPlayer(player) {
-        if (!this.containPlayer(player))
-            this.players.push(player);
+    addPlayer(playerID) {
+        for (let i = 1; i <= 4; i++) {
+            if (this.playersID["p"+i] == null) {
+                this.playersID["p"+i] = playerID
+                return
+            }
+        }
     }
 
-    removePlayer(player) {
-        if (this.containPlayer(player)) {
-            for (let i = 0; i < this.players.length; i++) {
-                if (this.players[i].id == player.id) {
-                    this.players.splice(i, 1);
-                }
+    removePlayer(playerID) {
+        for (let i = 1; i <= 4; i++) {
+            if (this.playersID["p"+i] == playerID) {
+                this.playersID["p"+i] = null
+                return
             }
         }
     }
 
 }
 
-class Games {
-    constructor() {
-        this.data = [];
-    }
-
+class Rooms {
     codeExist(code) {
-        for (const game of this.data) {
-            if (game.code == code) {
-                return true
-            }
-        }
-        return false
+        return this[code] != undefined
     }
 
-    getGame(code) {
-        for (const game of this.data) {
-            if (game.code == code) {
-                return game
-            }
-        }
-    }
-
-    updateGame(game) {
-        for (let i = 0; i < this.data.length; i++) {
-            const oldGame = this.data[i];
-            if (oldGame.code == game.code) {
-                this.data[i] = game;
-            }
-        }
-    }
-
-    createGame(host, isPrivate) {
-        let game = new Game(host, isPrivate);
-        /*
-        do {
-            game = new Game(host, isPrivate);
-        } while(!this.codeExist(game.code));
-        */
-        this.data.push(game);
-        console.log(`Game created : ${game.code}`);
+    createRoom(host) {
+        let game = new Room(host);
+        this[game.code] = game;
+        console.log(`Room created : ${game.code}`);
         return game
     }
-
-    kickPlayer(playerID) {
-        const player = new Player(playerID, undefined);
-        for (const game of this.data) {
-            if (game.containPlayer(player)) {
-                game.removePlayer(player);
-                this.updateGame(game);
-            }
-        }
-    }
-
-    clean() {
-        for (const game of this.data) {
-            if (game.players == []) {
-                this.data.slice(i, 1);
-            }
-        }
-    }
-
 }
 
 var PORT = 3000;
-var GAMES = new Games();
+var ROOMS = new Rooms();
 
 const job = new CronJob("*/30 * * * * *", () => {
-    GAMES.clean();
-    console.log("GAMES :", GAMES);
+    console.log("ROOMS :", ROOMS);
 });
 job.start();
 
@@ -150,30 +94,25 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
     console.log(`[+] ${socket.id}`);
 
-    socket.on("create-private-game", (hostName) => {
-        const game = GAMES.createGame(new Player(socket.id, hostName), false);
-        socket.emit("create-private-game", game.code);
-    });
+    let actualRoom = ROOMS.createRoom(socket.id);
 
-    socket.on("create-public-game", (hostName) => {
-        const game = GAMES.createGame(new Player(socket.id, hostName), true);
-        socket.emit("create-public-game", game.code);
-    });
+    socket.on("get-room-data", () => socket.emit("get-room-data", actualRoom));
 
-    socket.on("join-game", (code, playerName) => {
-        const game = GAMES.getGame(code);
-        if (game == undefined) {
-            socket.emit("error", {code: 0, message: "La partie n'existe pas !"});
+    socket.on("join-room", (code, playerName) => {
+        if (!ROOMS.codeExist(code)) {
+            socket.emit("error", {code: 0, message: "La table n'existe pas !"});
             return
         }
-        game.addPlayer(new Player(socket.id, playerName));
-        GAMES.updateGame(game);
-        socket.emit("join-game", game);
+        const actualRoom = ROOMS[code];
+        if (actualRoom.getPlayersNumber() >= 4) {
+            socket.emit("error", {code: 1, message: "La table contient trop de joueurs !"});
+            return
+        }
+        actualRoom.addPlayer(socket.id);
+        socket.emit("join-room", actualRoom);
     });
 
     socket.on("disconnect", () => {
-        GAMES.kickPlayer(socket.id);
-
         console.log(`[-] ${socket.id}`);
     });
 });
