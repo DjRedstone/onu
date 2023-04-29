@@ -3,10 +3,11 @@ const app = express();
 const server = require("http").createServer(app);
 const path = require("path");
 const io = require('socket.io')(server);
-const CronJob = require('cron').CronJob;
+const { Input } = require('enquirer');
+const chalk = require("chalk");
 
 class Room {
-    constructor(hostID) {
+    constructor(hostID, hostName) {
         // CODE
         const rand = () => {
             let res = ""
@@ -18,6 +19,7 @@ class Room {
         this.code = `${rand()}-${rand()}`;
         // OTHER
         this.playersID = {p1: hostID, p2: null, p3: null, p4: null};
+        this.playersName = {p1: hostName, p2: null, p3: null, p4: null};
         this.hostID = hostID;
     }
 
@@ -38,10 +40,11 @@ class Room {
         return false
     }
 
-    addPlayer(playerID) {
+    addPlayer(playerID, playerName) {
         for (let i = 1; i <= 4; i++) {
             if (this.playersID["p"+i] == null) {
-                this.playersID["p"+i] = playerID
+                this.playersID["p"+i] = playerID;
+                this.playersName["p"+i] = playerName;
                 return
             }
         }
@@ -50,7 +53,8 @@ class Room {
     removePlayer(playerID) {
         for (let i = 1; i <= 4; i++) {
             if (this.playersID["p"+i] == playerID) {
-                this.playersID["p"+i] = null
+                this.playersID["p"+i] = null;
+                this.playersName["p"+i] = null;
                 return
             }
         }
@@ -63,21 +67,39 @@ class Rooms {
         return this[code] != undefined
     }
 
-    createRoom(host) {
-        let game = new Room(host);
+    createRoom(hostID, hostName) {
+        let game = new Room(hostID, hostName);
         this[game.code] = game;
-        console.log(`Room created : ${game.code}`);
+        console.log(chalk.green(`[Room] (+) ${game.code}`));
         return game
+    }
+
+    clean() {
+        for (const game of Object.values(this)) {
+            if (game.getPlayersNumber() == 0) {
+                console.log(chalk.red(`[Room] (-) ${game.code}`));
+                delete this[game.code];
+            }
+        }
     }
 }
 
 var PORT = 3000;
 var ROOMS = new Rooms();
 
-const job = new CronJob("*/30 * * * * *", () => {
-    console.log("ROOMS :", ROOMS);
-});
-job.start();
+async function askCMD() {
+    const cmd = await new Input({
+        name: "Var name",
+        message: "\n"
+    }).run();
+    switch (cmd) {
+        case "rooms":
+            console.table(ROOMS);
+            break
+    }
+    askCMD();
+}
+askCMD();
 
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
@@ -92,27 +114,36 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-    console.log(`[+] ${socket.id}`);
+    console.log(chalk.green(`[Users] (+) ${socket.id}`));
 
-    let actualRoom = ROOMS.createRoom(socket.id);
+    let actualRoom;
+    socket.on("apply-host-name", (hostName) => {
+        actualRoom = ROOMS.createRoom(socket.id, hostName);
 
-    socket.on("get-room-data", () => socket.emit("get-room-data", actualRoom));
+        socket.on("get-room-data", () => socket.emit("get-room-data", actualRoom));
 
-    socket.on("join-room", (code, playerName) => {
-        if (!ROOMS.codeExist(code)) {
-            socket.emit("error", {code: 0, message: "La table n'existe pas !"});
-            return
-        }
-        const actualRoom = ROOMS[code];
-        if (actualRoom.getPlayersNumber() >= 4) {
-            socket.emit("error", {code: 1, message: "La table contient trop de joueurs !"});
-            return
-        }
-        actualRoom.addPlayer(socket.id);
-        socket.emit("join-room", actualRoom);
-    });
+        socket.on("join-room", (code) => {
+            if (!ROOMS.codeExist(code)) {
+                socket.emit("error", {code: 0, message: "La table n'existe pas !"});
+                return
+            }
+            const actualRoom = ROOMS[code];
+            if (actualRoom.containPlayer(socket.id)) {
+                socket.emit("error", {code: 2, message: "Vous êtes déjà dans la partie !"});
+                return
+            }
+            if (actualRoom.getPlayersNumber() >= 4) {
+                socket.emit("error", {code: 1, message: "La table contient trop de joueurs !"});
+                return
+            }
+            actualRoom.addPlayer(socket.id);
+            socket.emit("join-room", actualRoom);
+        });
 
-    socket.on("disconnect", () => {
-        console.log(`[-] ${socket.id}`);
+        socket.on("disconnect", () => {
+            console.log(chalk.red(`[Users] (-) ${socket.id}`));
+            actualRoom.removePlayer(socket.id);
+            ROOMS.clean();
+        });
     });
 });

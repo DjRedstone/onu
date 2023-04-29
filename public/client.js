@@ -9,6 +9,8 @@ const USER_NAME = Cookies.get("name");
 
 $("#p1-name").text(USER_NAME);
 
+socket.emit("apply-host-name", USER_NAME);
+
 function openLoadPage() {
     $("#loading").show();
     $("#loading").css("opacity", 1);
@@ -80,7 +82,13 @@ socket.on("connect", () => {
     console.log("Connected to the server!");
 
     socket.on("join-room", (room) => {
-        console.log(`Joining room ${room.code}...`);
+        try {
+            console.log(`Joining room ${room.code}...`);
+        } catch(err) {
+            error({code: 3, message: err.message});
+            return
+        }
+        
         console.log("Room data :", room);
 
         ROOM = room;
@@ -104,12 +112,19 @@ socket.on("get-room-data", (room) => {
     updateRoom(ROOM);
 });
 
-socket.on("error", (err) => {
+function error(err) {
     closeLoadPage();
     alert(`Une erreur est survenue ! (Code erreur : ${err.code})\n\n${err.message}`);
-});
+}
+socket.on("error", error);
 
 const CARDS_DATA = {
+    "back": {
+        x: 10,
+        y: 10,
+        width: 10,
+        height: 10
+    },
     "1-r": {
         x: 19,
         y: 17,
@@ -132,5 +147,4 @@ function applyCard(cardType, canvasID) {
     ctx.drawImage(cards, cardData.x, cardData.y, cardData.width, cardData.height, 0, 0, canvas.width, canvas.height);
 }
 
-applyCard("1-r", "cards-pile");
-applyCard("2-r", "cards-top");
+applyCard("back", "cards-pile");
